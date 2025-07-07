@@ -1,5 +1,8 @@
 import { randomFloat } from "./util"
 export const ZskSpiderEle = (eleObj: any, sendCtlMsg: Function): ZskSpiderEle => {
+    if (!eleObj) {
+        throw new Error('元素未找到')
+    }
     let data = eleObj
     const zse = {
         ...eleObj,

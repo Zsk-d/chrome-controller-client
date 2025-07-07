@@ -181,9 +181,12 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 		async hasGoogleV2() {
 			// 检查页面上是否有谷歌v2验证
 			logger.info('检查页面上是否有谷歌v2验证')
-			let gV2imgWindow = await this.querySelector('iframe[style="width: 400px; height: 580px;"]')
-
-			return !!gV2imgWindow
+			try {
+				await this.querySelector('iframe[style="width: 400px; height: 580px;"]')
+				return true
+			} catch (error) {
+				return false
+			}
 		},
 		/**
 		 * 

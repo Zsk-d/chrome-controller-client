@@ -2,6 +2,7 @@ export { ZskClient }
 
 declare global {
     type ZskSpiderEle = {
+        attributes: any,
         click: () => Promise<void>,
         sendKey: (key: string) => Promise<void>,
         sendKeys: (keys: string) => Promise<void>,
@@ -56,6 +57,6 @@ declare global {
         eval: (url: string) => Promise<any>,
         handleGoogleV2: (key: string) => void,
         hasGoogleV2: () => Promise<boolean>,
-        randomSleep: () => Promise<void>
+        randomSleep: (min: number, max: number) => Promise<void>
     }
 }
