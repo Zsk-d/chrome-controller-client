@@ -89,31 +89,36 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 		}
 	})
 	let action: ZskClient = {
-		async openPage(url: string, timeout: number) {
+		async openPage(url: string): Promise<void> {
 			logger.info("[Client] 打开页面", url);
 			await sendCtlMsg('openPage', [url])
 		},
-		async sleep(s: number) {
+		async sleep(s: number): Promise<void> {
 			logger.info("[Client] 等待", s, '秒');
 			// await sendCtlMsg( 'sleep', [s])
 			await new Promise(resolve => setTimeout(resolve, s * 1000));
 		},
-		async getElementById(id: string) {
+		async getElementById(id: string): Promise<ZskSpiderEle> {
 			logger.info("[Client] 按id获取元素", id);
 			let res = await sendCtlMsg('getElementById', [id])
 			return ZskSpiderEle(res, sendCtlMsg)
 		},
-		async querySelector(selector: string) {
+		/**
+		 * 使用css 选择器获取元素
+		 * @param selector 
+		 * @returns 
+		 */
+		async querySelector(selector: string): Promise<ZskSpiderEle> {
 			logger.info("[Client] 按selector获取元素", selector);
 			let res = await sendCtlMsg('querySelector', [selector])
 			return ZskSpiderEle(res, sendCtlMsg)
 		},
-		async getElementsByClassName(className: string) {
+		async getElementsByClassName(className: string): Promise<ZskSpiderEle[]> {
 			logger.info("[Client] 按class获取元素", className);
 			let res = await sendCtlMsg('getElementsByClassName', [className])
 			return res.map((item: any) => ZskSpiderEle(item, sendCtlMsg))
 		},
-		async querySelectorAll(selector: string) {
+		async querySelectorAll(selector: string): Promise<ZskSpiderEle[]> {
 			logger.info("[Client] 按selector获取元素", selector);
 			let res = await sendCtlMsg('querySelectorAll', [selector])
 			return res.map((item: any) => ZskSpiderEle(item, sendCtlMsg))
@@ -125,12 +130,12 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 		 * @param {*} interval 
 		 * @returns ele
 		 */
-		async waitUntilSelector(selector: string, timeout = 30, interval = 1) {
+		async waitUntilSelector(selector: string, timeout = 30, interval = 1): Promise<ZskSpiderEle> {
 			logger.info("[Client] 按selector等待元素出现", selector);
 			let res = await sendCtlMsg('waitUntilSelector', [selector, timeout, interval])
 			return ZskSpiderEle(res, sendCtlMsg)
 		},
-		async waitUntilSelectorAll(selector: string, timeout = 10, interval = 1) {
+		async waitUntilSelectorAll(selector: string, timeout = 10, interval = 1): Promise<ZskSpiderEle[]> {
 			logger.info("[Client] 按selector等待所有元素出现", selector);
 			let res = await sendCtlMsg('waitUntilSelectorAll', [selector, timeout, interval])
 			return res.map((item: any) => ZskSpiderEle(item, sendCtlMsg))
@@ -157,7 +162,7 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 				throw new Error("点击元素失败, 元素不存在");
 			}
 		},
-		async randomSleep(min = 0, max = 1) {
+		async randomSleep(min = 0, max = 1): Promise<void> {
 			let value = randomFloat(min, max)
 			await this.sleep(value)
 		},
@@ -166,11 +171,11 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 			return await sendCtlMsg("getUrl", [tabIndex])
 		},
 		async reload(tabIndex = 0) {
-			// 获取某个页面的url
+			// 重新加载页面
 			return await sendCtlMsg("reload", [tabIndex])
 		},
 		async eval(evalStr: string) {
-			// 获取某个页面的url
+			// 执行eval
 			return await sendCtlMsg("getEval", [evalStr])
 		},
 		async hasGoogleV2() {

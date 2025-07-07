@@ -1,6 +1,5 @@
 import { randomFloat } from "./util"
-export const ZskSpiderEle = (eleObj: any, sendCtlMsg: Function): ZskSpiderEle | null => {
-    if (!eleObj) return null
+export const ZskSpiderEle = (eleObj: any, sendCtlMsg: Function): ZskSpiderEle => {
     let data = eleObj
     const zse = {
         ...eleObj,

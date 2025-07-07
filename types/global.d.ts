@@ -2,10 +2,9 @@ export { ZskClient }
 
 declare global {
     type ZskSpiderEle = {
-        click: Function,
-        sendKey: Function,
-        sendKeys: Function,
-        input: Function
+        click: () => Promise<void>,
+        sendKey: (key: string) => Promise<void>,
+        sendKeys: (keys: string) => Promise<void>,
     }
 
     type ZskClientData = {
@@ -42,21 +41,21 @@ declare global {
         sessionId?: string,
     }
     type ZskClient = {
-        sleep: Function,
-        reload: Function,
-        openPage: Function,
-        close: Function,
-        waitUntilSelector: Function,
-        waitUntilSelectorAll: Function,
-        querySelector: Function,
-        querySelectorAll: Function,
-        getElementById: Function,
-        getElementsByClassName: Function,
-        getUrl: Function,
-        eval: Function,
-        clickBySelector: Function,
-        randomSleep: Function,
-        hasGoogleV2: Function,
-        handleGoogleV2: Function,
+        sleep: (s: number) => Promise<void>,
+        reload: () => Promise<void>,
+        openPage: (url: string) => Promise<void>,
+        close: () => void,
+        waitUntilSelector: (selector: string, timeout = 30, interval = 1) => Promise<ZskSpiderEle>,
+        waitUntilSelectorAll: (selector: string, timeout = 30, interval = 1) => Promise<ZskSpiderEle[]>,
+        querySelector: (selector: string) => Promise<ZskSpiderEle>,
+        querySelectorAll: (selector: string) => Promise<ZskSpiderEle[]>,
+        getElementById: (id: string) => Promise<ZskSpiderEle>,
+        getElementsByClassName: (className: string) => Promise<ZskSpiderEle[]>,
+        getUrl: () => Promise<string>,
+        clickBySelector: (selector: string) => Promise<ZskSpiderEle>,
+        eval: (url: string) => Promise<any>,
+        handleGoogleV2: (key: string) => void,
+        hasGoogleV2: () => Promise<boolean>,
+        randomSleep: () => Promise<void>
     }
 }
