@@ -3,12 +3,17 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "devDependencies": {
+    "@types/mailparser": "^3.4.6",
     "@types/node": "^24.0.10",
+    "@types/nodemailer": "^6.4.17",
     "@types/request": "^2.48.12",
     "@types/ws": "^8.18.1",
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "imapflow": "^1.0.189",
+    "mailparser": "^3.7.4",
+    "nodemailer": "^7.0.4",
     "request": "^2.88.2",
     "ws": "^8.18.2"
   }
