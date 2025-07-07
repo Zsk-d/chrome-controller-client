@@ -1,1 +1,3 @@
-export { newZskSpider } from '../src/client'
+export { newZskSpider } from './client'
+
+export { ZskClient } from '../types/global'

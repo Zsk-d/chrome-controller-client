@@ -1,4 +1,4 @@
-export { }
+export { ZskClient }
 
 declare global {
     type ZskSpiderEle = {
@@ -8,7 +8,7 @@ declare global {
         input: Function
     }
 
-    type ZskClient = {
+    type ZskClientData = {
         resolve: null | ((value: T | PromiseLike<T>) => void),
         reject: null | ((reason: Error) => void)
     }
@@ -18,7 +18,7 @@ declare global {
     }
     type O2captchaResSolution = {
         token: string
-    } 
+    }
     type O2captchaRes = {
         errorId: number,
         solution: O2captchaResSolution,
@@ -29,5 +29,30 @@ declare global {
         debug: Function,
         warn: Function,
         error: Function,
+    }
+    type ZskClientOption = {
+        maximized?: boolean,
+        disableSystemProxy?: boolean,
+        ctlResTimeout?: number,
+        proxy?: string | null,
+        loc?: string | null
+    }
+    type ZskClient = {
+        sleep: Function,
+        reload: Function,
+        openPage: Function,
+        close: Function,
+        waitUntilSelector: Function,
+        waitUntilSelectorAll: Function,
+        querySelector: Function,
+        querySelectorAll: Function,
+        getElementById: Function,
+        getElementsByClassName: Function,
+        getUrl: Function,
+        eval: Function,
+        clickBySelector: Function,
+        randomSleep: Function,
+        hasGoogleV2: Function,
+        handleGoogleV2: Function,
     }
 }

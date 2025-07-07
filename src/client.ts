@@ -7,20 +7,14 @@ import WebSocket from 'ws'
 
 const logger = getLogger(__filename)
 
-export const newZskSpider = async (config = {
-	maximized: false,
-	disableSystemProxy: false,
-	ctlResTimeout: 60,
-	proxy: null,
-	loc: null
-}) => {
-	const data: ZskClient = {
+export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> => {
+	const data: ZskClientData = {
 		resolve: null,
 		reject: null,
 	}
 
 	const ws = new WebSocket("ws://localhost:8899");
-	const reg = (ws: WebSocket, config: any) => {
+	const reg = (ws: WebSocket) => {
 		ws.send(JSON.stringify({
 			"type": "ctlReg",
 			data: {
@@ -70,7 +64,7 @@ export const newZskSpider = async (config = {
 		ws.on("open", () => {
 			// 注册控制会话
 			logger.info("[client] 注册控制端");
-			reg(ws, config);
+			reg(ws);
 		})
 		// 接收消息
 		ws.onmessage = (event: any) => {
@@ -88,7 +82,7 @@ export const newZskSpider = async (config = {
 			}
 		}
 	})
-	let action = {
+	let action: ZskClient = {
 		async openPage(url: string, timeout: number) {
 			logger.info("[Client] 打开页面", url);
 			await sendCtlMsg('openPage', [url])
