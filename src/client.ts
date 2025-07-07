@@ -1,8 +1,11 @@
 import { ZskSpiderEle } from "./ele"
 import { randomFloat } from "./util"
+import { getLogger } from "./logger"
 
 import { req2captcha, get2captchaRes } from './2captcha'
 import WebSocket from 'ws'
+
+const logger = getLogger(__filename)
 
 module.exports = {
 	newZskSpider: async (config = {
@@ -35,7 +38,7 @@ module.exports = {
 		}
 		const sendCtlMsg = async (command: string, args: any[] = [], timeout = 60): Promise<any> => {
 			return await new Promise(async (resolve, reject) => {
-				// console.log(`[Client] 新resolve-------------`, command);
+				// logger.info(`[Client] 新resolve-------------`, command);
 				data.resolve = resolve;
 				data.reject = reject;
 				let msgStr = JSON.stringify({
@@ -45,12 +48,12 @@ module.exports = {
 					timeout
 				})
 				ws.send(msgStr);
-				console.log(`[Client] 发送消息: ${msgStr}`)
+				logger.info(`[Client] 发送消息: ${msgStr}`)
 			})
 		}
 		const sendCtlWindow = async (command: string, args = [], timeout = 60) => {
 			return await new Promise(async (resolve, reject) => {
-				// console.log(`[Client] 新resolve-------------`, command);
+				// logger.info(`[Client] 新resolve-------------`, command);
 				data.resolve = resolve;
 				data.reject = reject;
 				ws.send(JSON.stringify({
@@ -62,12 +65,12 @@ module.exports = {
 			})
 		}
 		await new Promise(async (resolve, reject) => {
-			// console.log(`[Client] 注册 resolve-------------`);
+			// logger.info(`[Client] 注册 resolve-------------`);
 			data.resolve = resolve;
 			data.reject = reject;
 			ws.on("open", () => {
 				// 注册控制会话
-				console.log("[client] 注册控制端");
+				logger.info("[client] 注册控制端");
 				reg(ws, config);
 			})
 			// 接收消息
@@ -80,7 +83,7 @@ module.exports = {
 							data.resolve(msg.data.data)
 							data.resolve = null
 							data.reject = null
-							// console.log(`[Client] resolve调用--------`);
+							// logger.info(`[Client] resolve调用--------`);
 						}
 					}
 				}
@@ -88,31 +91,31 @@ module.exports = {
 		})
 		let action = {
 			async openPage(url: string, timeout: number) {
-				console.log("[Client] 打开页面", url);
+				logger.info("[Client] 打开页面", url);
 				await sendCtlMsg('openPage', [url])
 			},
 			async sleep(s: number) {
-				console.log("[Client] 等待", s, '秒');
+				logger.info("[Client] 等待", s, '秒');
 				// await sendCtlMsg( 'sleep', [s])
 				await new Promise(resolve => setTimeout(resolve, s * 1000));
 			},
 			async getElementById(id: string) {
-				console.log("[Client] 按id获取元素", id);
+				logger.info("[Client] 按id获取元素", id);
 				let res = await sendCtlMsg('getElementById', [id])
 				return ZskSpiderEle(res, sendCtlMsg)
 			},
 			async querySelector(selector: string) {
-				console.log("[Client] 按selector获取元素", selector);
+				logger.info("[Client] 按selector获取元素", selector);
 				let res = await sendCtlMsg('querySelector', [selector])
 				return ZskSpiderEle(res, sendCtlMsg)
 			},
 			async getElementsByClassName(className: string) {
-				console.log("[Client] 按class获取元素", className);
+				logger.info("[Client] 按class获取元素", className);
 				let res = await sendCtlMsg('getElementsByClassName', [className])
 				return res.map((item: any) => ZskSpiderEle(item, sendCtlMsg))
 			},
 			async querySelectorAll(selector: string) {
-				console.log("[Client] 按selector获取元素", selector);
+				logger.info("[Client] 按selector获取元素", selector);
 				let res = await sendCtlMsg('querySelectorAll', [selector])
 				return res.map((item: any) => ZskSpiderEle(item, sendCtlMsg))
 			},
@@ -124,12 +127,12 @@ module.exports = {
 			 * @returns ele
 			 */
 			async waitUntilSelector(selector: string, timeout = 30, interval = 1) {
-				console.log("[Client] 按selector等待元素出现", selector);
+				logger.info("[Client] 按selector等待元素出现", selector);
 				let res = await sendCtlMsg('waitUntilSelector', [selector, timeout, interval])
 				return ZskSpiderEle(res, sendCtlMsg)
 			},
 			async waitUntilSelectorAll(selector: string, timeout = 10, interval = 1) {
-				console.log("[Client] 按selector等待所有元素出现", selector);
+				logger.info("[Client] 按selector等待所有元素出现", selector);
 				let res = await sendCtlMsg('waitUntilSelectorAll', [selector, timeout, interval])
 				return res.map((item: any) => ZskSpiderEle(item, sendCtlMsg))
 			},
@@ -173,7 +176,7 @@ module.exports = {
 			},
 			async hasGoogleV2() {
 				// 检查页面上是否有谷歌v2验证
-				console.log('检查页面上是否有谷歌v2验证')
+				logger.info('检查页面上是否有谷歌v2验证')
 				let gV2imgWindow = await this.querySelector('iframe[style="width: 400px; height: 580px;"]')
 
 				return !!gV2imgWindow
@@ -187,7 +190,7 @@ module.exports = {
 				await this.sleep(5)
 				// 检查是否有google v2验证
 				let res = await this.eval('(()=>{return getRecaptchaClients()})()')
-				console.log('google v2验证:', res)
+				logger.info('google v2验证:', res)
 				if (res && res.length > 0) {
 					let siteKey = res[0].sitekey
 					let version = res[0].version
@@ -203,22 +206,22 @@ module.exports = {
 					let taskId = reqRes.taskId
 					let startTime = new Date().getTime()
 					while (true) {
-						console.log(`获取2captcha 结果 ${taskId}...`)
+						logger.info(`获取2captcha 结果 ${taskId}...`)
 						let taskRes = await get2captchaRes(taskId, clientKey)
 						if (taskRes.errorId === 0) {
 							// 判断任务状态
 							if (taskRes.status === "ready") {
-								console.log("[Client] google v2 验证任务完成");
+								logger.info("[Client] google v2 验证任务完成");
 								// 处理完成
 								let token = taskRes.solution.token
 								// 执行代码
 								await this.eval(`window['${func}']('${token}')`)
 								await this.sleep(5)
-								console.log("[Client] google v2 执行验证");
+								logger.info("[Client] google v2 执行验证");
 								break
 							} else if (taskRes.status === "processing") {
 								// 正在处理2captcha
-								console.log(`[Client] google v2 验证任务执行中, 已等待${((new Date().getTime() - startTime) / 1000)}秒`);
+								logger.info(`[Client] google v2 验证任务执行中, 已等待${((new Date().getTime() - startTime) / 1000)}秒`);
 								await this.sleep(5)
 								continue
 							} else {

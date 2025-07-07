@@ -18,10 +18,16 @@ declare global {
     }
     type O2captchaResSolution = {
         token: string
-    }
+    } 
     type O2captchaRes = {
         errorId: number,
         solution: O2captchaResSolution,
         status: string
+    }
+    type Logger = {
+        info: Function,
+        debug: Function,
+        warn: Function,
+        error: Function,
     }
 }
