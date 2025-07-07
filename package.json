@@ -1,4 +1,7 @@
 {
+  "name": "chrome-controller-client",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "devDependencies": {
     "@types/node": "^24.0.10",
     "@types/request": "^2.48.12",

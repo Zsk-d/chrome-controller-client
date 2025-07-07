@@ -6,13 +6,15 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "emitDeclarationOnly": false,
     "outDir": "dist",
     "rootDir": "src",
     "sourceMap": true
   },
   "include": [
     "src",
-    "types"
+    "types/global.d.ts"
   ],
   "exclude": [
     "node_modules",

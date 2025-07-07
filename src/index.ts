@@ -1,0 +1,1 @@
+export { newZskSpider } from '../src/client'
