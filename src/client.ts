@@ -7,7 +7,13 @@ import WebSocket from 'ws'
 
 const logger = getLogger(__filename)
 
+/**
+ * 创建一个浏览器客户端
+ * @param config 
+ * @returns 
+ */
 export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> => {
+
 	const data: ZskClientData = {
 		resolve: null,
 		reject: null,

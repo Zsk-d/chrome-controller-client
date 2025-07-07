@@ -35,7 +35,11 @@ declare global {
         disableSystemProxy?: boolean,
         ctlResTimeout?: number,
         proxy?: string | null,
-        loc?: string | null
+        loc?: string | null,
+        // 是否保存userdata
+        keepUserdata?: boolean,
+        // 保存的sessionid的userdata
+        sessionId?: string,
     }
     type ZskClient = {
         sleep: Function,
