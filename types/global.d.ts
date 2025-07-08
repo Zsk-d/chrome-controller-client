@@ -40,6 +40,7 @@ declare global {
         keepUserdata?: boolean,
         // 保存的sessionid的userdata
         sessionId?: string,
+        windowPosition?: string,
     }
     type ZskClient = {
         sleep: (s: number) => Promise<void>,
