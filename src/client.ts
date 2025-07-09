@@ -17,10 +17,19 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 	const data: ZskClientData = {
 		resolve: null,
 		reject: null,
+		eventLiseners: {},
 	}
 
 	const ws = new WebSocket("ws://localhost:8899");
 	const reg = (ws: WebSocket) => {
+		// 检查劫持函数
+		if (config.hijackFuncs) {
+			for (const [key, value] of Object.entries(config.hijackFuncs)) {
+				if (typeof value === 'function') {
+					config.hijackFuncs[key as keyof typeof config.hijackFuncs] = value.toString();
+				}
+			}
+		}
 		ws.send(JSON.stringify({
 			"type": "ctlReg",
 			data: {
@@ -50,6 +59,17 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 			logger.info(`[Client] 发送消息: ${msgStr}`)
 		})
 	}
+	/**
+	 * 发送拦截事件响应
+	 * @param eventName 
+	 * @param eventData 
+	 */
+	const sendAddHijackFuncMsg = (name: string, funcStr: string) => {
+		ws.send(JSON.stringify({
+			type: "ext-add-hijack-func",
+			data: { name, funcStr }
+		}));
+	}
 	const sendCtlWindow = async (command: string, args = [], timeout = 60) => {
 		return await new Promise(async (resolve, reject) => {
 			// logger.info(`[Client] 新resolve-------------`, command);
@@ -73,7 +93,7 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 			reg(ws);
 		})
 		// 接收消息
-		ws.onmessage = (event: any) => {
+		ws.onmessage = async (event: any) => {
 			console.debug("[Transfer server] 收到消息：", event.data);
 			let msg = JSON.parse(event.data);
 			if (msg.type === 'ctl-res') {
@@ -85,10 +105,14 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 						// logger.info(`[Client] resolve调用--------`);
 					}
 				}
+			} else if (msg.type === 'ext-event') {
+				// 事件回调
+				let { eventName, eventData } = msg.data
+				await client.onEvent(eventName, eventData)
 			}
 		}
 	})
-	let action: ZskClient = {
+	let client: ZskClient = {
 		async openPage(url: string): Promise<void> {
 			logger.info("[Client] 打开页面", url);
 			await sendCtlMsg('openPage', [url])
@@ -193,7 +217,7 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 		 * @param {*} clientKey 
 		 * @returns 
 		 */
-		async handleGoogleV2(clientKey: string) {
+		async handleGoogleV2(clientKey: string): Promise<void> {
 			await this.sleep(5)
 			// 检查是否有google v2验证
 			let res = await this.eval('(()=>{return getRecaptchaClients()})()')
@@ -238,12 +262,51 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 						throw new Error("2captcha 获取任务错误 " + taskRes);
 					}
 				}
-				return true
+			}
+		},
+		/**
+		 * 添加xhr open 事件监听
+		 * @param xhrOpenEventData 
+		 * @returns 
+		 */
+		addXHROpenHijackListener(func: ExtEventListener): void {
+			if (!data.eventLiseners['XHROpenEvent']) {
+				data.eventLiseners['XHROpenEvent'] = []
+			}
+
+			data.eventLiseners['XHROpenEvent'].push(func)
+		},
+		/**
+		 * 添加xhr send 事件监听
+		 * @param func 
+		 */
+		addXHRSendHijackListener(func: ExtEventListener): void {
+			if (!data.eventLiseners['XHRSendEvent']) {
+				data.eventLiseners['XHRSendEvent'] = []
+			}
+
+			data.eventLiseners['XHRSendEvent'].push(func)
+		},
+
+		/**
+		 * 
+		 * @param eventNme 接收扩展发送的事件
+		 * @param eventData 返回给事件发送方
+		 */
+		async onEvent(eventNme: string, eventData: any): Promise<void> {
+			logger.debug(`收到扩展事件: ${eventNme} ${eventData}`)
+			// 开始分发事件
+			let listeners = data.eventLiseners[eventNme]
+			if (listeners && listeners.length > 0) {
+				// 调用事件处理
+				for (let index = 0; index < listeners.length; index++) {
+					await listeners[index](eventData)
+				}
 			}
 		},
 		close() {
 			ws.close()
 		}
 	}
-	return action
+	return client
 }

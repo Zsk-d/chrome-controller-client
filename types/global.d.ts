@@ -7,10 +7,29 @@ declare global {
         sendKey: (key: string) => Promise<void>,
         sendKeys: (keys: string) => Promise<void>,
     }
-
+    type XHROpenHijackArgs = {
+        method: string,
+        url: string,
+        async: boolean,
+        user: string,
+        password: string
+    }
+    type XHROpenEventData = {
+        id: number,
+        args: XHROpenHijackArgs
+    }
+    type XHRSendEventData = {
+        id: number,
+    }
+    /**
+     * async = true: 只监听, 不处理数据
+     * async = false: 监听并同步处理数据
+     */
+    type ExtEventListener = (eventData: any) => Promise<void>;
     type ZskClientData = {
         resolve: null | ((value: T | PromiseLike<T>) => void),
-        reject: null | ((reason: Error) => void)
+        reject: null | ((reason: Error) => void),
+        eventLiseners: { [eventName: string]: ExtEventListener[] }
     }
     type O2captchaReq = {
         errorId: number,
@@ -31,16 +50,60 @@ declare global {
         error: Function,
     }
     type ZskClientOption = {
+        /**
+         * 是否最大化窗口
+         */
         maximized?: boolean,
+        /**
+         * 是否忽略代理, 同时忽略proxy参数的代理
+         */
         disableSystemProxy?: boolean,
+        /**
+         * 全局的被控端响应时间
+         */
         ctlResTimeout?: number,
+        /**
+         * 代理地址
+         */
         proxy?: string | null,
+        /**
+         * 伪装位置, 大写两位国家代码 如JP/IT/CA/US
+         */
         loc?: string | null,
-        // 是否保存userdata
+        /**
+         * 是否保存userdata
+         */
         keepUserdata?: boolean,
-        // 保存的sessionid的userdata
+        /**
+         * 保存的sessionid的userdata
+         */
         sessionId?: string,
+        /**
+         * 指定浏览器窗口位置 x,y
+         */
         windowPosition?: string,
+        /**
+         * 是否启用xhr劫持
+         */
+        xhrHijack?: boolean,
+        /**
+         * 是否启用fetch劫持
+         */
+        fetchHijack?: boolean,
+        /**
+         * 劫持函数
+         * 现有: xhr open/ xhr send/ fetch open/ fetch send
+         */
+        hijackFuncs?: {
+            /**
+             * 提供参数列表, 可以劫持修改参数
+             */
+            xhrOpenEventHijackFunc?: ((...args: any[]) => any) | string,
+            /**
+             * 提供请求和响应数据, 可以劫持修改响应text
+             */
+            xhrSendEventHijackFunc?: ((reqData: any, resText: string) => any) | string,
+        }
     }
     type ZskClient = {
         sleep: (s: number) => Promise<void>,
@@ -56,8 +119,14 @@ declare global {
         getUrl: () => Promise<string>,
         clickBySelector: (selector: string) => Promise<ZskSpiderEle>,
         eval: (url: string) => Promise<any>,
-        handleGoogleV2: (key: string) => void,
+        handleGoogleV2: (key: string) => Promise<void>,
         hasGoogleV2: () => Promise<boolean>,
-        randomSleep: (min: number, max: number) => Promise<void>
+        randomSleep: (min: number, max: number) => Promise<void>,
+        addXHROpenHijackListener: (func: ExtEventListener) => void,
+        addXHRSendHijackListener: (func: ExtEventListener) => void,
+        onEvent: (eventNme: string, eventData: any) => Promise<void>,
+    }
+    type XHRHijeckData = {
+
     }
 }
