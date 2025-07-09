@@ -92,8 +92,8 @@ declare global {
          */
         fetchHijack?: boolean,
         /**
-         * 劫持函数
-         * 现有: xhr open/ xhr send/ fetch open/ fetch send
+         * 劫持函数, 不可调试, 会以func.toString() 形式传递给js注入脚本, 并以eval形式执行, 所以箭头函数的上下文不会生效
+         * 现有: xhr open/ xhr send/ fetch args/ fetch res
          */
         hijackFuncs?: {
             /**
@@ -108,6 +108,9 @@ declare global {
              * 劫持 fetch参数 和 options
              */
             fetchArgsHijackFunc?: ((input: string | Request, init: RequestInit) => any) | string,
+            /**
+             * 劫持 fetch响应结果
+             */
             fetchResHijackFunc?: ((req: FetchArgs, res: any) => any) | string
         }
     }
