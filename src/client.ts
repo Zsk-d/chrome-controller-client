@@ -269,7 +269,7 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 		 * @param xhrOpenEventData 
 		 * @returns 
 		 */
-		addXHROpenHijackListener(func: ExtEventListener): void {
+		addXHROpenEventListener(func: ExtEventListener): void {
 			if (!data.eventLiseners['XHROpenEvent']) {
 				data.eventLiseners['XHROpenEvent'] = []
 			}
@@ -280,12 +280,23 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 		 * 添加xhr send 事件监听
 		 * @param func 
 		 */
-		addXHRSendHijackListener(func: ExtEventListener): void {
+		addXHRSendEventListener(func: ExtEventListener): void {
 			if (!data.eventLiseners['XHRSendEvent']) {
 				data.eventLiseners['XHRSendEvent'] = []
 			}
 
 			data.eventLiseners['XHRSendEvent'].push(func)
+		},
+		/**
+		 * 添加fetch事件监听
+		 * @param func 
+		 */
+		addFetchEventListener(func: ExtEventListener): void {
+			if (!data.eventLiseners['FetchEvent']) {
+				data.eventLiseners['FetchEvent'] = []
+			}
+
+			data.eventLiseners['FetchEvent'].push(func)
 		},
 
 		/**

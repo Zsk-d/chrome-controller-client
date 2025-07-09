@@ -49,6 +49,7 @@ declare global {
         warn: Function,
         error: Function,
     }
+    type FetchArgs = [input: string | Request, init?: RequestInit]
     type ZskClientOption = {
         /**
          * 是否最大化窗口
@@ -103,6 +104,11 @@ declare global {
              * 提供请求和响应数据, 可以劫持修改响应text
              */
             xhrSendEventHijackFunc?: ((reqData: any, resText: string) => any) | string,
+            /**
+             * 劫持 fetch参数 和 options
+             */
+            fetchArgsHijackFunc?: ((input: string | Request, init: RequestInit) => any) | string,
+            fetchResHijackFunc?: ((req: FetchArgs, res: any) => any) | string
         }
     }
     type ZskClient = {
@@ -122,8 +128,9 @@ declare global {
         handleGoogleV2: (key: string) => Promise<void>,
         hasGoogleV2: () => Promise<boolean>,
         randomSleep: (min: number, max: number) => Promise<void>,
-        addXHROpenHijackListener: (func: ExtEventListener) => void,
-        addXHRSendHijackListener: (func: ExtEventListener) => void,
+        addXHROpenEventListener: (func: ExtEventListener) => void,
+        addXHRSendEventListener: (func: ExtEventListener) => void,
+        addFetchEventListener: (func: ExtEventListener) => void,
         onEvent: (eventNme: string, eventData: any) => Promise<void>,
     }
     type XHRHijeckData = {
