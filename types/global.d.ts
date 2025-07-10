@@ -100,7 +100,9 @@ declare global {
          * 开启cloudflare人机识别
          */
         tcaptchaCloudflare?: boolean,
-        tcaptchaCloudflareCallback?: boolean,
+        /**
+         * 2captcha的apikey
+         */
         tcaptchaClentKey?: string,
         /**
          * 劫持函数, 不可调试, 会以func.toString() 形式传递给js注入脚本, 并以eval形式执行, 所以箭头函数的上下文不会生效
