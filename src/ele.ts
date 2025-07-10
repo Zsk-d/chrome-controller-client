@@ -9,6 +9,9 @@ export const ZskSpiderEle = (eleObj: any, sendCtlMsg: Function): ZskSpiderEle =>
         async click() {
             await sendCtlMsg('eleClick', [data.eleId, data.eleIndex])
         },
+        async parentElement(): Promise<ZskSpiderEle> {
+            return await sendCtlMsg('parentElement', [data.eleId, data.eleIndex])
+        },
         async sendKey(key: string) {
             await sendCtlMsg('eleSendKey', [data.eleId, data.eleIndex, key])
         },

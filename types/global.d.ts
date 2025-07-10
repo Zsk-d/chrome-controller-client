@@ -6,6 +6,7 @@ declare global {
         click: () => Promise<void>,
         sendKey: (key: string) => Promise<void>,
         sendKeys: (keys: string) => Promise<void>,
+        parentElement: () => Promise<ZskSpiderEle>,
     }
     type XHROpenHijackArgs = {
         method: string,
@@ -25,7 +26,7 @@ declare global {
      * async = true: 只监听, 不处理数据
      * async = false: 监听并同步处理数据
      */
-    type ExtEventListener = (eventData: any) => Promise<void>;
+    type ExtEventListener = (eventData: any) => void;
     type ZskClientData = {
         resolve: null | ((value: T | PromiseLike<T>) => void),
         reject: null | ((reason: Error) => void),
@@ -92,6 +93,16 @@ declare global {
          */
         fetchHijack?: boolean,
         /**
+         * 开启谷歌人机识别
+         */
+        tcaptchaGoogle?: boolean,
+        /**
+         * 开启cloudflare人机识别
+         */
+        tcaptchaCloudflare?: boolean,
+        tcaptchaCloudflareCallback?: boolean,
+        tcaptchaClentKey?: string,
+        /**
          * 劫持函数, 不可调试, 会以func.toString() 形式传递给js注入脚本, 并以eval形式执行, 所以箭头函数的上下文不会生效
          * 现有: xhr open/ xhr send/ fetch args/ fetch res
          */
@@ -126,14 +137,18 @@ declare global {
         getElementById: (id: string) => Promise<ZskSpiderEle>,
         getElementsByClassName: (className: string) => Promise<ZskSpiderEle[]>,
         getUrl: () => Promise<string>,
+        clickXY: (x: number, y: number) => Promise<void>,
+        touchXY: (x: number, y: number) => Promise<void>,
         clickBySelector: (selector: string) => Promise<ZskSpiderEle>,
         eval: (url: string) => Promise<any>,
         handleGoogleV2: (key: string) => Promise<void>,
         hasGoogleV2: () => Promise<boolean>,
+        hasCloudflareTurnstile: () => Promise<boolean>,
         randomSleep: (min: number, max: number) => Promise<void>,
         addXHROpenEventListener: (func: ExtEventListener) => void,
         addXHRSendEventListener: (func: ExtEventListener) => void,
         addFetchEventListener: (func: ExtEventListener) => void,
+        addCloudflareEventListener: (func: ExtEventListener) => void,
         onEvent: (eventNme: string, eventData: any) => Promise<void>,
     }
     type XHRHijeckData = {

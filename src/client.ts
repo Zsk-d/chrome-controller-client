@@ -2,7 +2,7 @@ import { ZskSpiderEle } from "./ele"
 import { randomFloat } from "./util"
 import { getLogger } from "./logger"
 
-import { req2captcha, get2captchaRes } from './2captcha'
+import { req2captchaGoogleV2, req2captchaCloudflare, get2captchaRes } from './2captcha'
 import WebSocket from 'ws'
 
 const logger = getLogger(__filename)
@@ -202,7 +202,18 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 			// 执行eval
 			return await sendCtlMsg("getEval", [evalStr])
 		},
-		async hasGoogleV2() {
+		/**
+		 * 按坐标点击页面
+		 * @param x 
+		 * @param y 
+		 */
+		async clickXY(x: number, y: number) {
+			return await sendCtlMsg("clickXY", [x, y])
+		},
+		async touchXY(x: number, y: number) {
+			return await sendCtlMsg("touchXY", [x, y])
+		},
+		async hasGoogleV2(): Promise<boolean> {
 			// 检查页面上是否有谷歌v2验证
 			logger.info('检查页面上是否有谷歌v2验证')
 			try {
@@ -229,7 +240,7 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 				let pageurl = res[0].pageurl
 				let func = res[0].function
 				// 申请验证码
-				let reqRes = await req2captcha(clientKey, pageurl, siteKey)
+				let reqRes = await req2captchaGoogleV2(clientKey, pageurl, siteKey)
 				if (reqRes.errorId !== 0) {
 					throw new Error("2captcha 任务申请错误 " + reqRes);
 				}
@@ -237,7 +248,7 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 				let taskId = reqRes.taskId
 				let startTime = new Date().getTime()
 				while (true) {
-					logger.info(`获取2captcha 结果 ${taskId}...`)
+					logger.info(`获取2captcha 结果 taskid:${taskId} ...`)
 					let taskRes = await get2captchaRes(taskId, clientKey)
 					if (taskRes.errorId === 0) {
 						// 判断任务状态
@@ -262,6 +273,32 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 						throw new Error("2captcha 获取任务错误 " + taskRes);
 					}
 				}
+			}
+		},
+		async hasCloudflareTurnstile(): Promise<boolean> {
+			// 检查是否开启了对应的开关
+			if (!config.tcaptchaCloudflare) {
+				logger.warn(("未开启cloudflare人机识别开关, 无法处理验证流程, 请设定client(option.tcaptchaCloudflare=true)"))
+			}
+
+			await this.sleep(5)
+			// 先确定是否有 '.zone-name-title.h1'
+			try {
+				await this.querySelector('.zone-name-title.h1')
+				// 有验证
+				// 检查是否需要刷新页面中断验证过程
+				try {
+					await this.querySelector('input[name="cf-turnstile-response"]')
+					// 刷新页面
+					await this.reload()
+					// 等待重试
+					await this.sleep(5)
+				} catch (error) {
+					// 已经卡住, 直接等待打码
+				}
+				return true
+			} catch (error) {
+				return false
 			}
 		},
 		/**
@@ -298,6 +335,13 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 
 			data.eventLiseners['FetchEvent'].push(func)
 		},
+		addCloudflareEventListener(func: ExtEventListener): void {
+			if (!data.eventLiseners['ClouflareTurnstileEvent']) {
+				data.eventLiseners['ClouflareTurnstileEvent'] = []
+			}
+
+			data.eventLiseners['ClouflareTurnstileEvent'].push(func)
+		},
 
 		/**
 		 * 
@@ -319,5 +363,47 @@ export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> 
 			ws.close()
 		}
 	}
+	// 添加cloudflare验证码解决监听
+	client.addCloudflareEventListener(async (eventData) => {
+		// eventData 为 req的 task 部分
+		let tcaptchaClentKey = config.tcaptchaClentKey
+		if (!tcaptchaClentKey) {
+			logger.warn('收到cloudflare验证请求, 无clentKey无法处理验证流程, 请配置client(opttion.tcaptchaClentKey)')
+			return
+		}
+		// 请求2captcha解码
+		// 申请验证码
+		let reqRes = await req2captchaCloudflare(tcaptchaClentKey, eventData)
+		if (reqRes.errorId !== 0) {
+			throw new Error("2captcha 任务申请错误 " + reqRes);
+		}
+		// 保存并轮询
+		let taskId = reqRes.taskId
+		let startTime = new Date().getTime()
+		while (true) {
+			logger.info(`获取2captcha 结果 taskid:${taskId} ...`)
+			let taskRes = await get2captchaRes(taskId, tcaptchaClentKey)
+			if (taskRes.errorId === 0) {
+				// 判断任务状态
+				if (taskRes.status === "ready") {
+					logger.info("[Client] cloudflare 验证任务完成");
+					// 处理完成
+					let token = taskRes.solution.token
+					// 执行代码
+					await client.eval(`window.tsCallback('${token}')`)
+					break
+				} else if (taskRes.status === "processing") {
+					// 正在处理2captcha
+					logger.info(`[Client] cloudflare 验证任务执行中, 已等待${((new Date().getTime() - startTime) / 1000)}秒`);
+					await client.sleep(5)
+					continue
+				} else {
+					throw new Error("2captcha 获取任务错误 " + taskRes);
+				}
+			} else {
+				throw new Error("2captcha 获取任务错误 " + taskRes);
+			}
+		}
+	})
 	return client
 }
