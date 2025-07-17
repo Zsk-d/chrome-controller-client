@@ -8,7 +8,7 @@ for (const level of logLevelList) {
     fs.mkdirSync(path.dirname(logFiles[level]), { recursive: true })
 }
 
-export const getLogger = (jsFile: string, consoleLevel: string = 'info'): Logger => {
+export const getLogger = (jsFile: string, consoleLevel: string = 'debug'): Logger => {
     const fileName = path.basename(jsFile)
 
     const log = (level: string, message: string, ...args: any[]) => {

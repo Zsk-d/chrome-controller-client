@@ -7,6 +7,7 @@ declare global {
         sendKey: (key: string) => Promise<void>,
         sendKeys: (keys: string) => Promise<void>,
         parentElement: () => Promise<ZskSpiderEle>,
+        text?: string
     }
     type XHROpenHijackArgs = {
         method: string,
@@ -141,6 +142,7 @@ declare global {
         getUrl: () => Promise<string>,
         clickXY: (x: number, y: number) => Promise<void>,
         touchXY: (x: number, y: number) => Promise<void>,
+        screenshot: () => Promise<string>,
         clickBySelector: (selector: string) => Promise<ZskSpiderEle>,
         eval: (url: string) => Promise<any>,
         handleGoogleV2: (key: string) => Promise<void>,
