@@ -12,7 +12,7 @@ const logger = getLogger(__filename)
  * @param config 
  * @returns 
  */
-export const newZskSpider = async (config: ZskClientOption): Promise<ZskClient> => {
+export const newZskSpider = async (config: ZskClientOption = {}): Promise<ZskClient> => {
 
 	const data: ZskClientData = {
 		resolve: null,
