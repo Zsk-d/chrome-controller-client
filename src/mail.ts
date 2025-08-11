@@ -89,8 +89,10 @@ export const readMails = async (options: ReadMailOptions): Promise<ReadMailItem[
                 throw new Error('无法获取邮箱信息')
             }
 
-            const start = Math.max(1, client.mailbox.exists - limit + 1)
-            const messages = client.fetch({ seq: `${start}:*` }, { envelope: true, source: true })
+            const start = Math.max(1, client.mailbox.exists - limit + 1);
+            const end = client.mailbox.exists;
+
+            const messages = client.fetch({ seq: `${start}:${end}` }, { envelope: true, source: true });
 
             for await (const msg of messages) {
                 const env = msg.envelope as EnvelopeLike
@@ -114,6 +116,6 @@ export const readMails = async (options: ReadMailOptions): Promise<ReadMailItem[
     } finally {
         await client.logout()
     }
-
+    mails.reverse();
     return mails
 }

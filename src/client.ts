@@ -84,7 +84,7 @@ export const newZskSpider = async (config: ZskClientOption = {}): Promise<ZskCli
 		})
 	}
 	await new Promise(async (resolve, reject) => {
-		logger.debug(`[Client] 注册 resolve-------------`);
+		// logger.debug(`[Client] 注册 resolve-------------`);
 		data.resolve = resolve;
 		data.reject = reject;
 		ws.on("open", () => {
@@ -102,7 +102,7 @@ export const newZskSpider = async (config: ZskClientOption = {}): Promise<ZskCli
 						data.resolve(msg.data.data)
 						data.resolve = null
 						data.reject = null
-						logger.debug(`[Client] resolve调用--------`);
+						// logger.debug(`[Client] resolve调用--------`);
 					}
 				}
 			} else if (msg.type === 'ext-event') {
@@ -178,8 +178,13 @@ export const newZskSpider = async (config: ZskClientOption = {}): Promise<ZskCli
 			} else {
 				func = this.querySelector
 			}
-			let ele = await func(selector, timeout, interval)
+			let ele = null
+			try {
+				ele = await func(selector, timeout, interval)
+			} catch (error) {
+			}
 			if (ele) {
+				await this.sleep(1)
 				await ele.click()
 				return ele
 			} else {
