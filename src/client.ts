@@ -309,6 +309,9 @@ export const newZskSpider = async (config: ZskClientOption = {}): Promise<ZskCli
 				return false
 			}
 		},
+		async closeOtherTab(){
+			return await sendCtlMsg("closeOtherTab", [])
+		},
 		/**
 		 * 添加xhr open 事件监听
 		 * @param xhrOpenEventData 

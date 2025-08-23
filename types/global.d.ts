@@ -154,6 +154,7 @@ declare global {
         addFetchEventListener: (func: ExtEventListener) => void,
         addCloudflareEventListener: (func: ExtEventListener) => void,
         onEvent: (eventNme: string, eventData: any) => Promise<void>,
+        closeOtherTab: () => Promise<void>,
     }
     type XHRHijeckData = {
 
