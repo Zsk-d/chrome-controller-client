@@ -239,7 +239,7 @@ export const newZskSpider = async (config: ZskClientOption = {}): Promise<ZskCli
 		async handleGoogleV2(clientKey: string): Promise<void> {
 			await this.sleep(5)
 			// 检查是否有google v2验证
-			let res = await this.eval('(()=>{return getRecaptchaClients()})()')
+			let res = await this.eval('(()=>{return window.getRecaptchaClients()})()')
 			logger.debug('google v2验证:', res)
 			if (res && res.length > 0) {
 				let siteKey = res[0].sitekey
