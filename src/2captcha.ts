@@ -16,7 +16,12 @@ export const req2captcha = async (clientKey: string, task: any): Promise<O2captc
 
         request(options, function (error, response) {
             if (error) reject(new Error(error))
-            resolve(JSON.parse(response.body));
+            try {
+                let obj = JSON.parse(response.body);
+                resolve(obj);
+            } catch (error: any) {
+                reject(new Error('2chapcha 返回数据错误'))
+            }
         });
     })
 }
@@ -45,8 +50,13 @@ export const get2captchaRes = async (taskId: number, clientKey: string): Promise
             })
         };
         request(options, function (error, response) {
-            if (error) reject(new Error(error))
-            resolve(JSON.parse(response.body));
+            if (error) reject(new Error(error));
+            try {
+                let res = JSON.parse(response.body)
+                resolve(res);
+            } catch (error) {
+                reject(new Error('2chapcha 获取结果错误'))
+            }
         });
     })
 }
