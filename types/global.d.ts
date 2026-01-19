@@ -146,6 +146,7 @@ declare global {
         clickBySelector: (selector: string) => Promise<ZskSpiderEle>,
         eval: (url: string) => Promise<any>,
         handleGoogleV2: (key: string) => Promise<void>,
+        prepareGoogleV2: (key: string) => Promise<void>,
         hasGoogleV2: () => Promise<boolean>,
         hasCloudflareTurnstile: () => Promise<boolean>,
         randomSleep: (min: number, max: number) => Promise<void>,

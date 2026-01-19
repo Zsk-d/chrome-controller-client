@@ -19,6 +19,7 @@ export const newZskSpider = async (config: ZskClientOption = {}): Promise<ZskCli
 		reject: null,
 		eventLiseners: {},
 	}
+	const pre2CaptchaIdList: number[] = []
 
 	const ws = new WebSocket("ws://localhost:8899");
 	const reg = (ws: WebSocket) => {
@@ -231,6 +232,22 @@ export const newZskSpider = async (config: ZskClientOption = {}): Promise<ZskCli
 				return false
 			}
 		},
+		async prepareGoogleV2(clientKey: string): Promise<void> {
+			// 预处理google v2验证
+			await this.sleep(5)
+			// 检查是否有google v2验证
+			let res = await this.eval('(()=>{return window.getRecaptchaClients()})()')
+			logger.debug('google v2验证:', res)
+			if (res && res.length > 0) {
+				let siteKey = res[0].sitekey
+				let pageurl = res[0].pageurl
+				let reqRes = await req2captchaGoogleV2(clientKey, pageurl, siteKey)
+				if (reqRes.errorId !== 0) {
+					throw new Error("2captcha 任务申请错误 " + reqRes);
+				}
+				pre2CaptchaIdList.push(reqRes.taskId)
+			}
+		},
 		/**
 		 * 
 		 * @param {*} clientKey 
@@ -248,12 +265,17 @@ export const newZskSpider = async (config: ZskClientOption = {}): Promise<ZskCli
 				let pageurl = res[0].pageurl
 				let func = res[0].function
 				// 申请验证码
-				let reqRes = await req2captchaGoogleV2(clientKey, pageurl, siteKey)
-				if (reqRes.errorId !== 0) {
-					throw new Error("2captcha 任务申请错误 " + reqRes);
+				let taskId: number = 0
+				if (pre2CaptchaIdList.length !== 0) {
+					taskId = pre2CaptchaIdList.shift() || 0
+				} else {
+					let reqRes = await req2captchaGoogleV2(clientKey, pageurl, siteKey)
+					if (reqRes.errorId !== 0) {
+						throw new Error("2captcha 任务申请错误 " + reqRes);
+					}
+					// 保存并轮询
+					taskId = reqRes.taskId
 				}
-				// 保存并轮询
-				let taskId = reqRes.taskId
 				let startTime = new Date().getTime()
 				while (true) {
 					logger.debug(`获取2captcha 结果 taskid:${taskId} ...`)
@@ -309,7 +331,7 @@ export const newZskSpider = async (config: ZskClientOption = {}): Promise<ZskCli
 				return false
 			}
 		},
-		async closeOtherTab(){
+		async closeOtherTab() {
 			return await sendCtlMsg("closeOtherTab", [])
 		},
 		/**
