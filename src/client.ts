@@ -95,7 +95,7 @@ export const newZskSpider = async (config: ZskClientOption = {}): Promise<ZskCli
 		})
 		// 接收消息
 		ws.onmessage = async (event: any) => {
-			logger.debug("[Transfer server] 收到消息：", event.data);
+			// logger.debug("[Transfer server] 收到消息：", event.data);
 			let msg = JSON.parse(event.data);
 			if (msg.type === 'ctl-res') {
 				if (data.resolve !== null) {
